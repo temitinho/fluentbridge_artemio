@@ -1,0 +1,10 @@
+{
+  "name": "FluentBridge APP PIX artemio",
+  "description": "AI-Powered English Refinement \u0026 Phrasal Archive Tool",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

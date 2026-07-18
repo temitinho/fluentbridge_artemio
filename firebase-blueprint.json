@@ -1,0 +1,35 @@
+{
+  "entities": {
+    "user": {
+      "title": "User Profile",
+      "description": "User's account data, credits, and admin permissions",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Registered email address"
+        },
+        "credits": {
+          "type": "number",
+          "description": "User's current credits balance used to query services"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Whether the user is an application administrator"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the user account was initialized"
+        }
+      },
+      "required": ["email", "credits", "isAdmin"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "user",
+      "description": "User profile collection containing account details"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net (Default-Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper: Validates Document ID pattern and size to prevent resource poisoning
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Admin Verification Helper (Checks email verification and database role)
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'kokitelmolotov@gmail.com' && request.auth.token.email_verified == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
+      );
+    }
+
+    // User Document Schema Validation Blueprint
+    function isValidUser(data) {
+      return data.email is string && data.email.size() <= 256 &&
+             (data.credits is int || data.credits is float) && data.credits >= 0 &&
+             data.isAdmin is bool;
+    }
+
+    // Rules for Users collection
+    match /users/{userId} {
+      // Path hardening and PII check (only owner or admin can read a user profile)
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      
+      // Query security (prevent query scraping; only admins can list all users)
+      allow list: if isAdmin();
+
+      // Creation constraints (verifies initial credits, admin flag, and server timestamp)
+      allow create: if isValidId(userId) && isOwner(userId) && 
+                      incoming().keys().hasAll(['email', 'credits', 'isAdmin', 'createdAt']) &&
+                      incoming().keys().size() == 4 &&
+                      isValidUser(incoming()) && 
+                      incoming().createdAt == request.time &&
+                      incoming().credits <= 30 &&
+                      (incoming().isAdmin == false || (request.auth.token.email == 'kokitelmolotov@gmail.com' && request.auth.token.email_verified == true));
+
+      // Action-Based Updates
+      allow update: if isValidId(userId) && (
+        // Action A: User self-updates their own document (credits only, other fields immutable)
+        (isOwner(userId) && 
+         (!('email' in existing()) || !('email' in incoming()) || incoming().email == existing().email) &&
+         (!('createdAt' in existing()) || !('createdAt' in incoming()) || incoming().createdAt == existing().createdAt) &&
+         (!('isAdmin' in existing()) || !('isAdmin' in incoming()) || incoming().isAdmin == existing().isAdmin) &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['credits']) &&
+         (incoming().credits is int || incoming().credits is float) && 
+         incoming().credits >= 0) ||
+         
+        // Action B: Admin updates credits or admin roles
+        (isAdmin() && 
+         (!('email' in existing()) || !('email' in incoming()) || incoming().email == existing().email) &&
+         (!('createdAt' in existing()) || !('createdAt' in incoming()) || incoming().createdAt == existing().createdAt) &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['credits', 'isAdmin']) &&
+         (incoming().credits is int || incoming().credits is float) && 
+         incoming().credits >= 0)
+      );
+
+      // Deny profile deletion to prevent bypassing debts or orphaning records
+      allow delete: if false;
+    }
+  }
+}

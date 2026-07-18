@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="glow-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle Base -->
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#bg-grad)" />
+  
+  <!-- Subtle Internal Glow/Shadow -->
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="url(#glow-grad)" />
+
+  <!-- Bridge and Speech Wave Iconography -->
+  <!-- Left Pillar/Bubble -->
+  <path d="M160 220 C160 170, 210 170, 210 220 L210 280 C210 330, 160 330, 160 280 Z" fill="#ffffff" opacity="0.9" />
+  
+  <!-- Right Pillar/Bubble -->
+  <path d="M302 232 C302 182, 352 182, 352 232 L352 292 C352 342, 302 342, 302 292 Z" fill="#ffffff" />
+  
+  <!-- Connecting Bridge Arch -->
+  <path d="M210 230 Q256 190, 302 230 Q256 210, 210 230 Z" fill="#38bdf8" />
+  
+  <!-- Glowing Bridge Reflection / Bottom Arch -->
+  <path d="M210 270 Q256 310, 302 270 Q256 290, 210 270 Z" fill="#60a5fa" opacity="0.6" />
+
+  <!-- Accent Dots (Conversational Wave) -->
+  <circle cx="185" cy="250" r="8" fill="#1d4ed8" />
+  <circle cx="327" cy="262" r="8" fill="#2563eb" />
+</svg>
